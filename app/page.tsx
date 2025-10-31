@@ -1,6 +1,3 @@
-cd ~/soulink-ai
-
-cat > app/page.tsx <<'TSX'
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -18,89 +15,90 @@ type Q = {
 const QUESTIONS: Q[] = [
   {
     id: "q1",
-    text: "Would you rather tell a painful truth or keep peace with a lie?",
+    text: "If telling the truth might upset someone, I still prefer to tell it.",
     pillar: "Honesty",
-    hint: "Truth-cost test",
+    hint: "Truth over harmony",
   },
   {
     id: "q2",
-    text: "When you feel misunderstood, what do you do first — explain, withdraw, or attack?",
+    text: "When I feel ignored, I don’t chase — I let people come back to me.",
     pillar: "Attachment",
-    hint: "Conflict / nervous system pattern",
+    hint: "Secure vs anxious",
   },
   {
     id: "q3",
-    text: "If someone you like goes quiet for a day, what feeling rises first?",
-    pillar: "Attachment",
-  },
-  {
-    id: "q4",
-    text: "How comfortable are you saying “no” to people you care about?",
+    text: "I can say “no” without feeling guilty.",
     pillar: "Boundaries",
   },
   {
-    id: "q5",
-    text: "When you’re proven wrong, how easy is it to admit it?",
+    id: "q4",
+    text: "I work on myself (health, money, mindset, spirit) every month.",
     pillar: "Growth",
   },
   {
+    id: "q5",
+    text: "I like some masculine/feminine polarity in a relationship.",
+    pillar: "Polarity",
+    hint: "Chemistry preference",
+  },
+  {
     id: "q6",
-    text: "Have you ever hidden parts of your past because you feared judgment?",
+    text: "I don’t keep secret convos or DMs from someone I’m dating.",
     pillar: "Honesty",
   },
   {
     id: "q7",
-    text: "Do you prefer strict 50/50 in money or for one partner to lead when needed?",
-    pillar: "Polarity",
+    text: "If there’s conflict, I’d rather talk it out than disappear.",
+    pillar: "Attachment",
   },
   {
     id: "q8",
-    text: "Do you ever use intimacy or withdrawal to get your way?",
+    text: "I can respect a partner’s time, work, and friendships.",
     pillar: "Boundaries",
   },
   {
     id: "q9",
-    text: "If your partner dances with someone else at a party, how secure do you feel?",
-    pillar: "Attachment",
+    text: "I believe two people should grow together, not compete.",
+    pillar: "Growth",
   },
   {
     id: "q10",
-    text: "Are you the same person after 3 months as you were on day one?",
-    pillar: "Growth",
-  },
-  {
-    id: "q11",
-    text: "Can you love someone who disagrees with your beliefs?",
-    pillar: "Growth",
-  },
-  {
-    id: "q12",
-    text: "What did you learn from the last time you hurt someone?",
-    pillar: "Growth",
-  },
-  {
-    id: "q13",
-    text: "Do you believe relationships should have a shared mission?",
+    text: "I’m attracted to a partner who leads OR lets me lead (not both confused).",
     pillar: "Polarity",
   },
   {
-    id: "q14",
-    text: "Are you still healing from your last relationship?",
+    id: "q11",
+    text: "I don’t lie about kids, exes, money, or living situation.",
+    pillar: "Honesty",
+  },
+  {
+    id: "q12",
+    text: "I don’t panic if someone takes a little longer to reply.",
     pillar: "Attachment",
   },
   {
+    id: "q13",
+    text: "I don’t let family or friends disrespect my relationship.",
+    pillar: "Boundaries",
+  },
+  {
+    id: "q14",
+    text: "I study, pray, or learn things that make me a better partner.",
+    pillar: "Growth",
+  },
+  {
     id: "q15",
-    text: "Is love a feeling, a choice, or a frequency to you?",
-    pillar: "Honesty",
+    text: "I like when energy is clearly masculine/feminine, not roommate energy.",
+    pillar: "Polarity",
   },
 ];
 
 const PILLAR_COLORS: Record<Pillar, string> = {
   Honesty: "bg-emerald-500",
-  Attachment: "bg-sky-500",
+  Attachment: "bg-cyan-500",
   Boundaries: "bg-amber-500",
-  Growth: "bg-fuchsia-500",
-  Polarity: "bg-lime-500",
+  Growth: "bg-lime-500",
+  Polarity: "bg-pink-500",
 };
 
 function pct(n: number) {
@@ -109,24 +107,10 @@ function pct(n: number) {
 
 export default function Page() {
   const [name, setName] = useState("");
-  const [energy, setEnergy] = useState<"feminine" | "masculine" | "balanced">("balanced");
   const [answers, setAnswers] = useState<Record<string, Answer | undefined>>({});
   const [selfieFront, setSelfieFront] = useState<string | null>(null);
   const [selfieSide, setSelfieSide] = useState<string | null>(null);
   const [selfieQualityMsg, setSelfieQualityMsg] = useState("");
-
-  // load from URL
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const qName = p.get("u");
-    if (qName) setName(qName);
-    const loaded: Record<string, Answer> = {};
-    for (const q of QUESTIONS) {
-      const v = p.get(q.id);
-      if (v) loaded[q.id] = Math.min(5, Math.max(1, Number(v))) as Answer;
-    }
-    setAnswers((prev) => ({ ...prev, ...loaded }));
-  }, []);
 
   const allAnswered = useMemo(
     () => QUESTIONS.every((q) => answers[q.id] !== undefined),
@@ -151,34 +135,29 @@ export default function Page() {
     for (const q of QUESTIONS) {
       const v = answers[q.id];
       if (v) {
-        const pill = q.pillar;
-        sums[pill] += v;
-        counts[pill] += 1;
+        sums[q.pillar] += v;
+        counts[q.pillar] += 1;
       }
     }
-    const out: Record<Pillar, number> = {
-      Honesty: 0,
-      Attachment: 0,
-      Boundaries: 0,
-      Growth: 0,
-      Polarity: 0,
-    };
-    (Object.keys(sums) as Pillar[]).forEach((p) => {
-      out[p] = counts[p] ? sums[p] / (counts[p] * 5) : 0;
+    const out: Record<Pillar, number> = { ...sums };
+    (Object.keys(out) as Pillar[]).forEach((p) => {
+      out[p] = counts[p] ? out[p] / (counts[p] * 5) : 0;
     });
     return out;
   }, [answers]);
 
   const trustRatio = useMemo(() => {
-    const base = allAnswered ? 0.6 : 0.35;
-    const selfieBoost = (selfieFront ? 0.15 : 0) + (selfieSide ? 0.15 : 0);
-    return Math.min(0.98, base + selfieBoost);
+    let base = allAnswered ? 0.5 : 0.3;
+    if (selfieFront) base += 0.2;
+    if (selfieSide) base += 0.2;
+    return Math.min(0.98, base);
   }, [allAnswered, selfieFront, selfieSide]);
 
-  function onSelfie(
-    e: React.ChangeEvent<HTMLInputElement>,
-    which: "front" | "side"
-  ) {
+  function setAnswer(qid: string, v: Answer) {
+    setAnswers((prev) => ({ ...prev, [qid]: v }));
+  }
+
+  function onSelfie(e: React.ChangeEvent<HTMLInputElement>, which: "front" | "side") {
     const f = e.target.files?.[0];
     if (!f) return;
     const reader = new FileReader();
@@ -186,17 +165,17 @@ export default function Page() {
       if (typeof reader.result === "string") {
         if (which === "front") setSelfieFront(reader.result);
         else setSelfieSide(reader.result);
-        if (f.size < 50000) {
-          setSelfieQualityMsg("📸 Too small/dark — retake in good light, close to face.");
+        if (f.size < 60_000) {
+          setSelfieQualityMsg("📸 Too small / dark. Try again closer to your face with good light.");
         } else {
-          setSelfieQualityMsg("✅ Good! Face is clear enough.");
+          setSelfieQualityMsg("✅ Good! Face looks clear enough for ratio scan.");
         }
       }
     };
     reader.readAsDataURL(f);
   }
 
-  function onShareLink() {
+  function copyShareLink() {
     const p = new URLSearchParams();
     if (name) p.set("u", name);
     for (const q of QUESTIONS) {
@@ -208,20 +187,14 @@ export default function Page() {
     alert("Share link copied.");
   }
 
-  function setAnswer(qid: string, val: Answer) {
-    setAnswers((prev) => ({ ...prev, [qid]: val }));
-  }
-
   return (
     <main className="min-h-screen w-full bg-[#0b0f12] text-white">
-      {/* glow */}
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="pointer-events-none fixed inset-0">
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-96 w-[42rem] rounded-full blur-3xl opacity-30 bg-gradient-to-br from-fuchsia-500 via-lime-400 to-cyan-500" />
         <div className="absolute -bottom-40 right-1/2 translate-x-1/2 h-96 w-[42rem] rounded-full blur-3xl opacity-20 bg-gradient-to-tr from-cyan-400 via-emerald-400 to-lime-300" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-4 py-8 space-y-10">
-        {/* header */}
+      <div className="relative mx-auto max-w-6xl px-5 py-10 space-y-10">
         <header className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="size-9 rounded-xl bg-lime-400 flex items-center justify-center font-black text-black">
@@ -232,109 +205,68 @@ export default function Page() {
               <p className="text-xs text-white/60 -mt-0.5">Built by AI. Bound by Love.</p>
             </div>
           </div>
-          <div className="hidden md:flex gap-2 text-sm">
-            <a href="#quiz" className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15">
-              Cam-B Scan
+          <div className="hidden md:flex items-center gap-2">
+            <a href="#quiz" className="px-3 py-2 text-sm rounded-xl bg-white/10 hover:bg-white/15">
+              Psych Scan
             </a>
-            <a href="#selfie" className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15">
-              Face / Ratio
+            <a href="#selfie" className="px-3 py-2 text-sm rounded-xl bg-white/10 hover:bg-white/15">
+              Face Check
             </a>
-            <a href="#couple" className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15">
+            <a href="#couple" className="px-3 py-2 text-sm rounded-xl bg-white/10 hover:bg-white/15">
               Couple Mode
             </a>
           </div>
         </header>
 
-        {/* hero */}
         <section className="grid md:grid-cols-2 gap-8 items-center">
           <div>
             <h2 className="text-3xl md:text-5xl font-extrabold leading-tight">
               Find your person. <span className="text-lime-300">Grow</span> together.
             </h2>
-            <p className="mt-3 text-white/70">
-              15 psychology-powered questions + 2 selfies = fast trust check. Then share
-              link to match.
+            <p className="mt-3 text-white/70 max-w-prose">
+              We scan honesty, attachment, and polarity in 15 taps. Then we link two people with a private invite and a trust camera check.
             </p>
-            <div className="mt-5 flex gap-3 flex-wrap">
-              <a
-                href="#quiz"
-                className="px-5 py-2 rounded-xl bg-lime-400 text-black font-semibold"
-              >
-                Start Cam-B Scan
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a href="#quiz" className="px-4 py-2 rounded-xl bg-lime-400 text-black font-semibold hover:translate-y-0.5 transition">
+                Start Scan
               </a>
-              <button
-                onClick={onShareLink}
-                className="px-5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-sm"
-              >
+              <button onClick={copyShareLink} className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15">
                 Get Shareable Link
               </button>
             </div>
           </div>
-
-          {/* settings */}
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-4">
-            <div>
-              <label className="text-sm text-white/70">Your display name</label>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Julmer"
-                className="mt-1 w-full rounded-xl bg-black/40 px-3 py-2 outline-none ring-1 ring-white/10 focus:ring-lime-400"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-white/70">Your energy / vibe</label>
-              <select
-                value={energy}
-                onChange={(e) => setEnergy(e.target.value as any)}
-                className="mt-1 w-full rounded-xl bg-black/40 px-3 py-2 outline-none ring-1 ring-white/10 focus:ring-lime-400 text-sm"
-              >
-                <option value="balanced">Balanced</option>
-                <option value="feminine">Feminine (receive / be led)</option>
-                <option value="masculine">Masculine (lead / protect)</option>
-              </select>
-              <p className="text-xs text-white/40 mt-1">
-                Later we add gender-specific tripwire qs here.
-              </p>
-            </div>
-            <p className="text-xs text-white/50">
-              {allAnswered
-                ? "✅ Scan complete — selfie will boost trust ratio."
-                : "⏳ Finish all 15 to unlock best matching."}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <div className="text-sm text-white/70">Your Display Name</div>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Julmer"
+              className="mt-1 w-full rounded-xl bg-black/40 px-3 py-2 outline-none ring-1 ring-white/10 focus:ring-lime-400"
+            />
+            <p className="mt-3 text-xs text-white/50">
+              Your name gets baked into the share link so your match can open the exact same scan.
             </p>
           </div>
         </section>
 
-        {/* quiz */}
-        <section id="quiz" className="space-y-4">
-          <h3 className="text-2xl font-bold">15-Question Cam-B Cupid Scan</h3>
-          <p className="text-sm text-white/60">
-            1–5 (1 = strongly disagree, 5 = strongly agree). We check honesty, attachment,
-            boundaries, growth, polarity.
-          </p>
-
+        <section id="quiz" className="space-y-5">
+          <h3 className="text-2xl font-bold">Cam-B Cupid Scan (15)</h3>
+          <p className="text-white/70 text-sm">Rate 1–5 (1 = strongly disagree, 5 = strongly agree).</p>
           <div className="grid gap-4">
             {QUESTIONS.map((q) => (
-              <div
-                key={q.id}
-                className="rounded-2xl border border-white/10 bg-white/5 p-4 space-y-3"
-              >
-                <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-white/50">
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      PILLAR_COLORS[q.pillar]
-                    }`}
-                  />
-                  {q.pillar}
+              <div key={q.id} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className={`inline-block h-2 w-2 rounded-full ${PILLAR_COLORS[q.pillar]}`} />
+                  <span className="uppercase tracking-wide text-white/60">{q.pillar}</span>
+                  {q.hint ? <span className="text-xs text-white/40">• {q.hint}</span> : null}
                 </div>
-                <div className="text-sm md:text-base">{q.text}</div>
-                {q.hint ? <div className="text-xs text-white/40">{q.hint}</div> : null}
-                <div className="flex gap-2">
+                <div className="mt-1 font-medium">{q.text}</div>
+                <div className="mt-3 flex gap-2">
                   {[1, 2, 3, 4, 5].map((v) => (
                     <button
                       key={v}
                       onClick={() => setAnswer(q.id, v as Answer)}
-                      className={`px-3 py-1.5 rounded-lg border text-sm transition ${
+                      className={`px-3 py-2 rounded-lg border text-sm transition ${
                         answers[q.id] === v
                           ? "bg-lime-400 text-black border-lime-300"
                           : "bg-black/40 border-white/10 hover:bg-white/10"
@@ -347,112 +279,71 @@ export default function Page() {
               </div>
             ))}
           </div>
+        </section>
 
-          {/* pillar + selfie */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* pillar */}
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-              <h4 className="font-semibold">Your Pillar Balance</h4>
-              <div className="mt-4 space-y-3">
-                {(Object.keys(pillarScores) as Pillar[]).map((p) => (
-                  <div key={p} className="flex items-center gap-3">
-                    <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${PILLAR_COLORS[p]}`}
-                        style={{ width: `${pct(pillarScores[p])}%` }}
-                      />
-                    </div>
-                    <span className="w-20 text-sm text-white/60">{p}</span>
-                    <span className="text-sm tabular-nums text-white/70">
-                      {pct(pillarScores[p])}%
-                    </span>
+        <section className="grid md:grid-cols-2 gap-6">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <h4 className="font-semibold">Your Pillar Balance</h4>
+            <div className="mt-4 space-y-3">
+              {(Object.keys(pillarScores) as Pillar[]).map((p) => (
+                <div key={p} className="flex items-center gap-3">
+                  <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${PILLAR_COLORS[p]}`}
+                      style={{ width: `${pct(pillarScores[p])}%` }}
+                    />
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* selfie */}
-            <div
-              id="selfie"
-              className="rounded-2xl border border-white/10 bg-white/5 p-5 space-y-3"
-            >
-              <h4 className="font-semibold">Mutual Photo Check</h4>
-              <p className="text-xs text-white/60">
-                1) Front, 2) 3/4 angle. Good light, no heavy filters.
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                <label className="border border-dashed border-white/20 rounded-xl bg-black/20 h-32 flex flex-col items-center justify-center text-xs text-white/50 cursor-pointer hover:bg-black/10">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => onSelfie(e, "front")}
-                  />
-                  {selfieFront ? "✅ Front added" : "Front selfie"}
-                </label>
-                <label className="border border-dashed border-white/20 rounded-xl bg-black/20 h-32 flex flex-col items-center justify-center text-xs text-white/50 cursor-pointer hover:bg-black/10">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => onSelfie(e, "side")}
-                  />
-                  {selfieSide ? "✅ 3/4 added" : "3/4 / side selfie"}
-                </label>
-              </div>
-              {selfieQualityMsg ? (
-                <p className="text-xs mt-1 text-amber-200">{selfieQualityMsg}</p>
-              ) : null}
-              <div className="mt-2 flex items-center gap-2 text-sm">
-                <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-lime-400 transition-all"
-                    style={{ width: `${pct(trustRatio)}%` }}
-                  />
+                  <span className="text-sm text-white/60 w-28">{p}</span>
+                  <span className="text-sm text-white/80 tabular-nums">{pct(pillarScores[p])}%</span>
                 </div>
-                <span className="text-xs text-white/60">
-                  Trust Ratio: {pct(trustRatio)}%
-                </span>
+              ))}
+            </div>
+          </div>
+          <div id="selfie" className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <h4 className="font-semibold">Mutual Photo Check</h4>
+            <p className="text-white/70 text-sm mt-1">
+              Upload one front selfie and one side/¾ selfie. We’ll use this later for ratio vibes.
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              <label className="block rounded-xl border border-dashed border-white/20 bg-black/20 p-3 text-center cursor-pointer hover:bg-black/10">
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => onSelfie(e, "front")} />
+                {selfieFront ? (
+                  <img src={selfieFront} alt="front" className="mx-auto max-h-32 rounded-lg object-cover" />
+                ) : (
+                  <span className="text-white/50 text-sm">Front selfie</span>
+                )}
+              </label>
+              <label className="block rounded-xl border border-dashed border-white/20 bg-black/20 p-3 text-center cursor-pointer hover:bg-black/10">
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => onSelfie(e, "side")} />
+                {selfieSide ? (
+                  <img src={selfieSide} alt="side" className="mx-auto max-h-32 rounded-lg object-cover" />
+                ) : (
+                  <span className="text-white/50 text-sm">Side / ¾ selfie</span>
+                )}
+              </label>
+            </div>
+            {selfieQualityMsg && <p className="mt-3 text-xs text-amber-200">{selfieQualityMsg}</p>}
+            <div className="mt-4">
+              <p className="text-sm text-white/70 mb-1">Trust Ratio (demo)</p>
+              <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-lime-400"
+                  style={{ width: `${pct(trustRatio)}%` }}
+                />
               </div>
+              <p className="text-xs text-white/50 mt-1">{pct(trustRatio)}% linked confidence</p>
             </div>
           </div>
         </section>
 
-        {/* couple */}
-        <section id="couple" className="space-y-3">
-          <h3 className="text-2xl font-bold">Couple Mode</h3>
-          <p className="text-sm text-white/60">
-            Share your link with someone, paste theirs here, we compare the 5 pillars and
-            flag mismatches.
+        <section id="couple" className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <h3 className="text-xl font-semibold">Couple Mode (coming)</h3>
+          <p className="text-sm text-white/60 mt-1">
+            Share your scan with someone; when they open it, we compare your pillars and flag dealbreakers.
           </p>
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="md:col-span-2 rounded-2xl border border-white/10 bg-white/5 p-5 space-y-3">
-              <label className="text-xs text-white/60">Partner invite code / URL</label>
-              <input
-                placeholder="paste from text / DM"
-                className="w-full rounded-xl bg-black/40 px-3 py-2 outline-none ring-1 ring-white/10 focus:ring-lime-400 text-sm"
-              />
-              <div className="flex gap-2">
-                <button className="px-4 py-2 rounded-xl bg-lime-400 text-black text-sm font-semibold">
-                  Link Profiles
-                </button>
-                <button
-                  onClick={onShareLink}
-                  className="px-4 py-2 rounded-xl bg-white/10 text-sm hover:bg-white/15"
-                >
-                  Generate My Link
-                </button>
-              </div>
-            </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-white/70 space-y-1">
-              <p>✔ Compare honesty + attachment</p>
-              <p>✔ Flag jealousy / money mismatch</p>
-              <p>✔ Suggest convo prompts</p>
-            </div>
-          </div>
         </section>
 
-        <footer className="py-8 text-center text-xs text-white/40">
+        <footer className="text-center text-xs text-white/30 py-4">
           © {new Date().getFullYear()} SoulLink AI — Built by AI. Bound by Love.
         </footer>
       </div>
